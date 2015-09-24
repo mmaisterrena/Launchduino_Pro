@@ -43,7 +43,7 @@ Developed by Mauricio Maisterrena.
  * Change midi channel just by pressing the corresponding button.
  * Midi Panic Button.
  
-# Funcionality Cheat Sheet
+# Functionality Cheat Sheet
 
 (1) (2) (3) (4) (5) (6) (7) (8)    
 [_] [_] [_] [_] [_] [_] [_] [_] [ 9]<br> 
