@@ -1,5 +1,7 @@
 # Launchdino_Pro
-Use Arduino Uno (or Mega) and the USB Host Shield to transform your Novation Launchpad S into a stand-alone instrument (no need for a computer). Created by Mauricio Maisterrena.
+Use Arduino Uno (or Mega) and the USB Host Shield to transform your Novation Launchpad S into a stand-alone instrument (no need for a computer). 
+
+Developed by Mauricio Maisterrena.
   
  Requirements:
  
@@ -23,4 +25,12 @@ Use Arduino Uno (or Mega) and the USB Host Shield to transform your Novation Lau
 
 Donate
 
-Help yourself by helping us support you! Many thousands of hours have been spent developing the USB Host Shield library. Since you find it useful, please consider donating via the button below. Donations will allow us to support you by ensuring hardware that you have can be acquired in order to add support for your microcontroller board.
+Help yourself by helping us support you! Many hours have been spent developing this code. Since you find it useful, please consider donating via the button below. 
+
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" value="NRH7682YRXFP2">
+<input type="image" src="https://www.paypalobjects.com/en_US/MX/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+
