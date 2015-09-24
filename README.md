@@ -1,4 +1,4 @@
-# Launchdino_Pro
+Launchdino_Pro
 __________
 Use Arduino Uno (or Mega) and the USB Host Shield to transform your Novation Launchpad S into a stand-alone (no need for a computer) midi "keyboard" similar to Ableton's Push instrument mode. 
 
@@ -43,10 +43,5 @@ Just plug the USB Host Shield to your Arduino and follow the diagram shown in th
 Help yourself by helping us support you! Many hours have been spent developing this code. Since you find it useful, please consider donating via the button below.
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NRH7682YRXFP2
 
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="hosted_button_id" value="NRH7682YRXFP2">
-<input type="image" src="https://www.paypalobjects.com/en_US/MX/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-</form>
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NRH7682YRXFP2"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" alt="PayPal - The safer, easier way to pay online!" /></a>
 
