@@ -15,7 +15,7 @@ Developed by Mauricio Maisterrena.
  * Wires 
   
  
--SoftWare:
+-Software:
  * Arduino MIDI library
    http://playground.arduino.cc/Main/MIDILibrary
   
@@ -26,7 +26,12 @@ Developed by Mauricio Maisterrena.
    https://github.com/YuuichiAkagawa/USBH_MIDI
 
 # How to Connect
-Just plug the USB Host Shield to your Arduino and follow the diagram shown in this page https://www.arduino.cc/en/Tutorial/Midi
+* Plug the USB Host Shield to your Arduino .
+* To send the midi from the Arduino follow the diagram shown in this page https://www.arduino.cc/en/Tutorial/Midi
+* Install the libraries mentioned on the requirements secction by followinng the instructions in this page http://arduino.cc/en/Guide/Libraries 
+* Upload the Launchduino Pro File tio your Arduino.
+* Connect your Lauchpad to the USB Host Shield.
+* Have fun.
 
 # Features
  * Send Midi notes using Launchpad S grid.
