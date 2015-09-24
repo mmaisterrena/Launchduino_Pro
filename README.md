@@ -34,9 +34,9 @@ Just plug the USB Host Shield to your Arduino and follow the diagram shown in th
  * Leds display the root notes (yellow) ant fifths (green) of the selected scale.
  * Octave up and down buttons.
  * Change the root note of the selected scale by presing a button.
- * Send midi to 3 diffecrent midi channels plus an additional channel for drums
+ * Send midi to 3 diffecrent midi channels plus an additional channel for drums.
  * Change midi channel just by pressing the corresponding button.
- * Midi Panic Button
+ * Midi Panic Button.
  
 # Funcionality Cheat Sheet
 
