@@ -1,4 +1,4 @@
-# Launchdino Pro
+# Launchduino Pro
 __________
 Use Arduino Uno (or Mega) and the USB Host Shield to transform your Novation Launchpad S into a stand-alone (no need for a computer) midi "keyboard" similar to Ableton's Push instrument mode. 
 
