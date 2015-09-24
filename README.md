@@ -2,6 +2,7 @@
 Use Arduino Uno (or Mega) and the USB Host Shield to transform your Novation Launchpad S into a stand-alone instrument (no need for a computer). Created by Mauricio Maisterrena.
   
  Requirements:
+ 
  -Hardware:
  * Arduino Uno or Mega
  * Arduino USB Host Shields from Circuitsathome.com (or replica)
