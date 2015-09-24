@@ -20,3 +20,7 @@ Use Arduino Uno (or Mega) and the USB Host Shield to transform your Novation Lau
  
  * Yuuichi Akagawa's USB MIDI library
    https://github.com/YuuichiAkagawa/USBH_MIDI
+
+Donate
+
+Help yourself by helping us support you! Many thousands of hours have been spent developing the USB Host Shield library. Since you find it useful, please consider donating via the button below. Donations will allow us to support you by ensuring hardware that you have can be acquired in order to add support for your microcontroller board.
