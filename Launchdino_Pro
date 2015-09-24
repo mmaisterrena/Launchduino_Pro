@@ -1,0 +1,1076 @@
+/*
+ *******************************************************************************
+ * Launchdino Pro
+ * Use Arduino Uno (or Mega) and the USB Host Shield to transform your Novation Launchpad S into a stand-alone instrument (no need for a computer).
+ * Copyright 2015 Mauricio Maisterrena, Project at https://github.com/mmaisterrena/Launchdino_Pro
+ * 
+ * Requirements:
+ * -Hardware:
+ * Arduino Uno or Mega
+ * Arduino USB Host Shields from Circuitsathome.com (or replica)
+ *  
+ * -SoftWare:
+ * Arduino MIDI library
+ * http://playground.arduino.cc/Main/MIDILibrary
+ * 
+ * for use with USB Host Shield 2.0 from Circuitsathome.com
+ * https://github.com/felis/USB_Host_Shield_2.0
+ *
+ * Yuuichi Akagawa's USB MIDI library
+ * https://github.com/YuuichiAkagawa/USBH_MIDI
+ *
+ *******************************************************************************
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ *******************************************************************************
+ */
+//////////////////////////
+// MIDI Pin assign
+// 2 : GND
+// 4 : +5V(Vcc) with 220ohm
+// 5 : TX
+//////////////////////////
+
+
+
+#include <MIDI.h>
+#include <usbh_midi.h>
+#include <usbhub.h>
+
+
+// ----------------------------------------------------------------------------------------------
+/*
+Effects:
+1. Volca Sample Channel Redirect
+2. Octaver
+3. Power Chord
+*/
+
+int vEffect=1;
+int vVolcaChan=16;
+
+//Lauchpad variables (Defaults)
+int vRoot = 0; // C by default
+
+int nScale = 2; //Natural Minor by default
+int vOctave = 0;
+int vOctaveN = 0; 
+int vDinChan = 12; //Sends MIDI on channel 12 by default
+int uScale = nScale;
+int OldScale = nScale;
+
+//Selectable Channels
+int vDinChan1 = 10;
+int vDinChan2 = 11;
+int vDinChan3 = 12;
+
+//Note that will change the effect and which midi channel to listen
+int vNoteConfig1=36;
+int vNoteConfig2=37;
+int vNoteConfig3=38;
+int vChannelConfig=13;
+
+
+//This represent the notes (Keys) that will be triggering each sample, you can chenge this to whatever note you want to use to trigger each sample.
+int sNote1=60;
+int sNote2=61;
+int sNote3=62;
+int sNote4=63;
+int sNote5=64;
+int sNote6=65;
+int sNote7=66;
+int sNote8=67;
+int sNote9=68;
+int sNote10=69;
+
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+// Satisfy the IDE, which needs to see the include statment in the ino too.
+#ifdef dobogusinclude
+#include <spi4teensy3.h>
+#include <SPI.h>
+#endif
+#ifdef MIDI_CREATE_DEFAULT_INSTANCE
+MIDI_CREATE_DEFAULT_INSTANCE();
+#endif
+#ifdef USBCON
+#define _MIDI_SERIAL_PORT Serial1
+#else
+#define _MIDI_SERIAL_PORT Serial
+#endif
+//--------------------------------------------------------------------------------------------------------------------------------------------
+
+
+USB  Usb;
+USBH_MIDI  Midi(&Usb);
+
+void MIDI_poll();
+void doDelay(unsigned long t1, unsigned long t2, unsigned long delayTime);
+
+void setup()
+{
+
+  pinMode(13, OUTPUT);
+  
+  MIDI.turnThruOff();
+ 
+  // Initiate MIDI communications, listen to all channels
+  MIDI.begin(MIDI_CHANNEL_OMNI);
+    
+  //Workaround for non UHS2.0 Shield 
+  pinMode(7,OUTPUT);
+  digitalWrite(7,HIGH);
+
+  if (Usb.Init() == -1) {
+  while(1); //halt
+  }//if (Usb.Init() == -1...
+  delay( 200 );
+}
+
+
+
+void loop()
+{
+  
+  MIDI.turnThruOff();  
+  
+
+  unsigned long t1;
+  uint8_t msg[4];
+
+  Usb.Task();
+  t1 = micros();
+  if( Usb.getUsbTaskState() == USB_STATE_RUNNING )
+  {
+    MIDI_poll();/////////////////////////////////////////////////////////////////////////////<<<<------------
+    MIDI.read();
+  }
+ 
+  doDelay(t1, micros(), 1000);
+ 
+
+}
+
+//Scales 
+const int vMayor[] = { 
+96	,	98	,	100	,	101	,	103	,	105	,	107	,	108	,
+91	,	93	,	95	,	96	,	98	,	100	,	101	,	103	,
+86	,	88	,	89	,	91	,	93	,	95	,	96	,	98	,
+81	,	83	,	84	,	86	,	88	,	89	,	91	,	93	,
+76	,	77	,	79	,	81	,	83	,	84	,	86	,	88	,
+71	,	72	,	74	,	76	,	77	,	79	,	81	,	83	,
+65	,	67	,	69	,	71	,	72	,	74	,	76	,	77	,
+60	,	62	,	64	,	65	,	67	,	69	,	71	,	72	
+};
+
+
+const int vAeolian[] = { //Natural minor
+96	,	98	,	99	,	101	,	103	,	104	,	106	,	108	,
+91	,	92	,	94	,	96	,	98	,	99	,	101	,	103	,
+86	,	87	,	89	,	91	,	92	,	94	,	96	,	98	,
+80	,	82	,	84	,	86	,	87	,	89	,	91	,	92	,
+75	,	77	,	79	,	80	,	82	,	84	,	86	,	87	,
+70	,	72	,	74	,	75	,	77	,	79	,	80	,	82	,
+65	,	67	,	68	,	70	,	72	,	74	,	75	,	77	,
+60	,	62	,	63	,	65	,	67	,	68	,	70	,	72	
+};
+
+const int vFlamenca[] = {
+96	,	97	,	100	,	101	,	103	,	104	,	106	,	108	,
+91	,	92	,	94	,	96	,	97	,	100	,	101	,	103	,
+85	,	88	,	89	,	91	,	92	,	94	,	96	,	97	,
+80	,	82	,	84	,	85	,	88	,	89	,	91	,	92	,
+76	,	77	,	79	,	80	,	82	,	84	,	85	,	88	,
+70	,	72	,	73	,	76	,	77	,	79	,	80	,	82	,
+65	,	67	,	68	,	70	,	72	,	73	,	76	,	77	,
+60	,	61	,	64	,	65	,	67	,	68	,	70	,	72
+};	
+
+
+const int vBlues[] = {
+96	,	99	,	101	,	102	,	103	,	106	,	107	,	108	,
+91	,	94	,	95	,	96	,	99	,	101	,	102	,	103	,
+87	,	89	,	90	,	91	,	94	,	95	,	96	,	99	,
+82	,	83	,	84	,	87	,	89	,	90	,	91	,	94	,
+77	,	78	,	79	,	82	,	83	,	84	,	87	,	89	,
+71	,	72	,	75	,	77	,	78	,	79	,	82	,	83	,
+66	,	67	,	70	,	71	,	72	,	75	,	77	,	78	,
+60	,	63	,	65	,	66	,	67	,	70	,	71	,	72	
+};
+
+
+
+const int vVertical[] = {8,24,40,56,72,88,104,120};
+
+
+
+
+//-------------------------------------------------------
+void LedsOff(){
+  uint8_t msg[4];
+     msg[0]=176;
+     msg[1]=0;
+     msg[2]=0;
+     Midi.SendData(msg, 0);
+     delay(1); 
+};
+
+int vFirst=1;
+
+void LPLeds(int nScale){
+ uint8_t msg[4];
+
+
+  if (nScale == 5){ //Chromatic Scale  
+    LedsOff();
+    delay(1); 
+
+  //-------------------Turn On-----------------------------
+  //Root Lights Chromatic
+  msg[0] = midi::NoteOn;
+  msg[2] = 127;
+  
+  msg[1] = 112;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 103;
+  Midi.SendData(msg, 0);
+  delay(1); 
+
+  
+  msg[1] = 82;
+  Midi.SendData(msg, 0);
+   delay(1); 
+
+  msg[1] = 52;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 22;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 1;
+  Midi.SendData(msg, 0);
+    delay(1); 
+ 
+   
+  //5ths Lights Chromatic
+  msg[2] = 100;
+  
+  msg[1] = 98;
+  Midi.SendData(msg, 0);
+   delay(1); 
+ 
+  msg[1] = 68;
+  Midi.SendData(msg, 0);
+   delay(1); 
+ 
+  msg[1] = 38;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 119;
+  Midi.SendData(msg, 0);
+    delay(1); 
+
+  msg[1] = 17;
+  Midi.SendData(msg, 0);
+   delay(1); 
+
+ 
+ //-------------------
+ //Stop all current note ons
+ 
+      
+ 
+}
+
+else if (nScale == 6)
+{
+    //Drum Pads (Volca Sample)
+    LedsOff();
+
+    msg[0] = midi::NoteOn;
+    msg[2] = 100;
+
+    msg[1] = 113;
+    Midi.SendData(msg, 0);
+   delay(1); 
+   
+    
+    int i = 112;
+    while (i <116)
+    {
+      msg[1] = i;
+      Midi.SendData(msg, 0);
+     delay(1); 
+     i++;
+    }
+
+    i = 96;
+    while (i <100)
+    {
+      msg[1] = i;
+      Midi.SendData(msg, 0);
+      delay(1); 
+      i++;
+    } 
+
+    msg[1] = 80;
+    Midi.SendData(msg, 0);
+    delay(1); 
+    msg[1] = 81;
+    Midi.SendData(msg, 0);
+    delay(1); 
+
+
+    msg[2] = 127;
+    msg[1] = 82;
+    Midi.SendData(msg, 0);
+    delay(1); 
+
+    msg[1] = 83;
+    Midi.SendData(msg, 0);
+    delay(1); 
+
+ 
+} 
+
+else {
+  
+  
+  // 7 Tone Scale Lights
+  
+  LedsOff();
+ //-------------------------Turn On------------------
+  
+  msg[0] = midi::NoteOn;
+  msg[2] = 127;
+  
+  
+  msg[1] = 112;
+  Midi.SendData(msg, 0);
+    delay(1); 
+
+  
+  msg[1] = 81;
+  Midi.SendData(msg, 0);
+    delay(1); 
+
+  msg[1] = 50;
+  Midi.SendData(msg, 0);
+    delay(1); 
+
+  msg[1] = 19;
+  Midi.SendData(msg, 0);
+    delay(1); 
+
+  msg[1] = 7;
+  Midi.SendData(msg, 0);
+  delay(1); 
+
+  msg[1] = 19;
+  Midi.SendData(msg, 0);
+  delay(1); 
+
+  msg[1] = 0;
+  Midi.SendData(msg, 0);
+    delay(1); 
+
+  msg[1] = 100;
+  Midi.SendData(msg, 0);
+    delay(1); 
+
+  msg[1] = 69;
+  Midi.SendData(msg, 0);
+    delay(1); 
+
+  msg[1] = 38;
+  Midi.SendData(msg, 0);
+  delay(1); 
+
+  
+  //5th Lights 7 Tone Scales
+  msg[2] = 100;
+  
+  msg[1] = 97;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 66;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 35;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 4;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 16;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 85;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 54;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 116;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 23;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+} 
+  
+  
+// ---Config Buttons -------
+  
+  //Scale Selection
+
+  msg[2] = 28;
+  msg[1] = 8;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 24;
+  Midi.SendData(msg, 0);
+  delay(1); 
+  
+  msg[1] = 40;
+  Midi.SendData(msg, 0);
+  delay(1); 
+ 
+  msg[1] = 56;
+  Midi.SendData(msg, 0);
+   delay(1); 
+
+  
+  msg[1] = 72;
+  Midi.SendData(msg, 0);
+  delay(1); 
+   
+
+  msg[2] = 127;
+  msg[1] = 88;
+  Midi.SendData(msg, 0);
+  delay(1); 
+
+  //effects Button
+  msg[2] = 60;
+  msg[1] = 120;
+  Midi.SendData(msg, 0);
+  delay(1); 
+
+  
+  // Top Row of Circles
+  msg[0] = midi::ControlChange;
+  msg[2] = 127;
+
+
+  //Panic Button
+  msg[2] = 15;
+
+  msg[1] = 111;
+  Midi.SendData(msg, 0);
+  delay(1); 
+
+   LedRoot(vRoot);
+   LedChan(vDinChan);
+   LedOctave(vOctaveN);
+
+ 
+}
+
+
+
+//-------------------------------------------------------
+void LedRoot(int vRoot)  {
+  //Effect Selection
+  uint8_t msg[4];
+
+  msg[0] = midi::ControlChange;
+  msg[2] = 13 + (vRoot * 10);        
+      
+ msg[1] = 106;
+ Midi.SendData(msg, 0);
+ delay(1); 
+ 
+ msg[1] = 107;
+ Midi.SendData(msg, 0);
+ delay(1); 
+}
+//-------------------------------------------------------
+
+const int vScaleButtons[] {8,24,40,56,72}; // Midi notes corresponding to right column of circle buttons.
+
+void LedScale(int uScale,int OldScale){
+    uint8_t msg[4];
+    
+  
+    msg[0] = midi::NoteOn;
+
+    msg[2] = 28; //Green Color Led (Unselect Old Scale)
+    msg[1] = vScaleButtons[OldScale-1];
+    Midi.SendData(msg, 0);
+    delay(1); 
+
+    msg[2] = 60; //Orange Color Led (Selected Scale)
+    msg[1] = vScaleButtons[uScale-1];
+    Midi.SendData(msg, 0);
+    delay(1); 
+}
+
+
+
+
+void LedOctave(int vOctaveN){
+    uint8_t msg[4];
+    msg[0] = midi::ControlChange;
+    msg[2] = 60; //Green Color Led
+    
+    msg[1] = 104;
+    Midi.SendData(msg, 0);
+    delay(1); 
+    
+    msg[1] = 105;
+    Midi.SendData(msg, 0);
+    delay(1); 
+
+  
+  if (vOctaveN == 1){
+    msg[2] = 127;
+    msg[1] = 104;
+    Midi.SendData(msg, 0);
+    delay(1); 
+  }
+  else if (vOctaveN == 2){
+    msg[2] = 15;
+    msg[1] = 104;
+    Midi.SendData(msg, 0);
+    delay(1); 
+  }
+   else if (vOctaveN == -1){
+    msg[2] = 127;
+    msg[1] = 105;
+    Midi.SendData(msg, 0);
+    delay(1); 
+  }
+  else if (vOctaveN == -2){
+    msg[2] = 15;
+    msg[1] = 105;
+    Midi.SendData(msg, 0);
+    delay(1); 
+  }
+    
+    
+}
+
+
+void LedChan(int vDinChan)  {
+  // Channel Selection
+  uint8_t msg[4];
+
+    msg[0] = midi::ControlChange;
+    msg[2] = 25; //Led Off
+    
+    msg[1] = 108;
+    Midi.SendData(msg, 0);
+    delay(1); 
+    
+    msg[1] = 109;
+    Midi.SendData(msg, 0);
+    delay(1); 
+    
+    msg[1] = 110;
+    Midi.SendData(msg, 0);
+    delay(1); 
+  
+  msg[2] = 63; //Orange Color Led
+  if (vDinChan == 10){
+    msg[1] = 108;
+    Midi.SendData(msg, 0);
+    delay(1); 
+  }
+
+  else if (vDinChan == 11){
+    msg[1] = 109;
+    Midi.SendData(msg, 0);
+    delay(1); 
+  }
+
+  else if (vDinChan == 12){
+    msg[1] = 110;
+    Midi.SendData(msg, 0);
+    delay(1); 
+  }
+  
+} 
+
+
+
+
+
+
+//-------------------------------------------------------
+void LedEffect(int vEffect)  {
+  //Effect Selection
+  uint8_t msg[4];
+
+  msg[0] = midi::NoteOn;
+  msg[1] = 120;
+  delay(1);  
+
+  if(vEffect == 1){
+      msg[2] = 60;
+      delay(1); 
+      Midi.SendData(msg, 0);
+      delay(1); 
+  } 
+  
+  else if(vEffect == 2){
+      msg[2] = 127;
+      delay(1); 
+      Midi.SendData(msg, 0);
+      delay(1); 
+  } 
+
+   else if(vEffect == 3){
+      msg[2] = 15;
+      delay(1); 
+      Midi.SendData(msg, 0);
+      delay(1); 
+  } 
+
+}
+
+
+//-------------------------------------------------------
+void Panic(){
+   int i = 0;
+        while (i < 128){
+           MIDI.send(midi::NoteOff,i,0,vDinChan);
+           i++;
+      }
+
+}
+   
+   
+int vPad;
+
+// ==========Poll USB MIDI Controler and send to serial MIDI==================
+
+void MIDI_poll()
+{
+    byte outBuf[ 3 ];
+    uint8_t size;
+
+    if( (size=Midi.RecvData(outBuf)) > 0 ){
+     uint8_t msg[4];
+   
+ 
+
+  
+ //Octave Selection 
+  if (outBuf[ 1 ]==105  & vOctaveN > -2 & outBuf[ 2 ]==127)
+  {
+    vOctaveN = vOctaveN - 1;
+    LedOctave(vOctaveN);
+    
+  }
+  
+  if (outBuf[ 1 ]==104  & vOctaveN < 2 & outBuf[ 2 ]==127)
+  {
+    vOctaveN = vOctaveN + 1;
+    LedOctave(vOctaveN); 
+    
+  }
+  
+  vOctave = vOctaveN * 12;
+  
+  
+ //Root Note Selection 
+   if (outBuf[ 1 ]==106 & vRoot > 0 & outBuf[ 2 ]==127)
+   {
+     vRoot = vRoot - 1;
+     LPLeds(nScale);
+     LedRoot(vRoot);
+     
+   }
+
+  
+   if (outBuf[ 1 ]==107 & vRoot < 12 & outBuf[ 2 ]==127)
+  {
+     vRoot = vRoot + 1;
+     LPLeds(nScale);
+     LedRoot(vRoot);
+     
+
+  }
+  
+
+  if (nScale != 6){
+    OldScale = nScale;
+  } 
+  
+  //Select Scale
+  if (outBuf[ 1 ]==8 & outBuf[ 2 ]==127)  {
+     nScale=1; 
+     LPLeds(nScale);
+     LedScale(nScale,OldScale);
+     
+  };
+
+  if (outBuf[ 1 ]==24  & outBuf[ 2 ]==127)  {
+     nScale=2;
+     LPLeds(nScale);
+     LedScale(nScale,OldScale);
+     
+  };
+
+  if (outBuf[ 1 ]==40  & outBuf[ 2 ]==127)  {
+     nScale=3;
+     LPLeds(nScale);
+     LedScale(nScale,OldScale);
+     
+  };
+  
+  if (outBuf[ 1 ]==56 & outBuf[ 2 ]==127)  {
+     nScale=4;
+     LPLeds(nScale);
+     LedScale(nScale,OldScale);
+     
+  };
+
+  if (outBuf[ 1 ]==72 & outBuf[ 2 ]==127 )  {
+     nScale=5;
+     LPLeds(nScale);
+     LedScale(nScale,OldScale);
+     
+    
+  };
+
+  if (outBuf[ 1 ]==88 & outBuf[ 2 ]==127 )  { //Drums
+     nScale=6;
+     LPLeds(nScale);
+     LedScale(OldScale,OldScale);
+      
+  }; 
+
+ if (nScale != 6){
+    uScale = nScale;
+ }
+  
+//Select Midi Channel
+
+  if (outBuf[ 1 ]==108 & outBuf[ 2 ]==127) 
+  {
+     vDinChan = vDinChan1;
+     LedChan(vDinChan);
+     nScale = uScale;
+     LPLeds(nScale);
+     LedScale(nScale,OldScale);
+      
+  };
+  
+  if (outBuf[ 1 ]==109 & outBuf[ 2 ]==127)
+  {
+     vDinChan = vDinChan2;
+     LedChan(vDinChan);
+     nScale = uScale;
+     LPLeds(nScale);
+     LedScale(nScale,OldScale);
+     
+  };
+  
+  if (outBuf[ 1 ]==110 & outBuf[ 2 ]==127)
+  {
+     vDinChan = vDinChan3;
+     LedChan(vDinChan);
+     nScale = uScale;
+     LPLeds(nScale);
+     LedScale(nScale,OldScale);
+     
+  };
+  
+
+   
+    
+//Panic
+  if (outBuf[ 1 ]==111 & outBuf[ 2 ]==127)
+  {
+      Panic();
+  };
+  
+ //Effects
+
+    if (outBuf[ 1 ]==120 & outBuf[ 2 ]==127){
+      if (vEffect==3) { 
+        vEffect=1;
+        LedEffect(vEffect);
+      }
+      else {
+        vEffect=vEffect+1;
+        LedEffect(vEffect);
+      }
+      
+    }
+
+    
+    int vNoteAdjust = vRoot + vOctave - 24;     
+    
+
+if (nScale == 1){ //Mayor
+ if (outBuf[ 1 ]>111 & outBuf[ 1 ]<120 ){
+    vPad = outBuf[ 1 ] - 56;
+    MIDI.send(midi::NoteOn, vMayor[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>95 & outBuf[ 1 ]<104){
+    vPad = outBuf[ 1 ] - 48;
+    MIDI.send(midi::NoteOn, vMayor[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>79 & outBuf[ 1 ]<88){
+    vPad = outBuf[ 1 ] - 40;
+    MIDI.send(midi::NoteOn, vMayor[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>63 & outBuf[ 1 ]<72){
+    vPad = outBuf[ 1 ] - 32;
+    MIDI.send(midi::NoteOn, vMayor[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+   else if (outBuf[ 1 ]>47 & outBuf[ 1 ]<56){
+    vPad = outBuf[ 1 ] - 24;
+    MIDI.send(midi::NoteOn, vMayor[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>31 & outBuf[ 1 ]<40){
+    vPad = outBuf[ 1 ] - 16;
+    MIDI.send(midi::NoteOn, vMayor[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+   else if (outBuf[ 1 ]>15 & outBuf[ 1 ]<24){
+    vPad = outBuf[ 1 ] - 8;
+    MIDI.send(midi::NoteOn, vMayor[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>=0 & outBuf[ 1 ]<8){
+    vPad = outBuf[ 1 ] - 0;
+    MIDI.send(midi::NoteOn, vMayor[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+}
+
+
+
+else if (nScale == 2){ //Natural Minor
+ if (outBuf[ 1 ]>111 & outBuf[ 1 ]<120){
+    vPad = outBuf[ 1 ] - 56;
+    MIDI.send(midi::NoteOn, vAeolian[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>95 & outBuf[ 1 ]<104){
+    vPad = outBuf[ 1 ] - 48;
+    MIDI.send(midi::NoteOn, vAeolian[vPad]  + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>79 & outBuf[ 1 ]<88){
+    vPad = outBuf[ 1 ] - 40;
+    MIDI.send(midi::NoteOn,vAeolian[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>63 & outBuf[ 1 ]<72){
+    vPad = outBuf[ 1 ] - 32;
+    MIDI.send(midi::NoteOn, vAeolian[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+   else if (outBuf[ 1 ]>47 & outBuf[ 1 ]<56){
+    vPad = outBuf[ 1 ] - 24;
+    MIDI.send(midi::NoteOn,vAeolian[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>31 & outBuf[ 1 ]<40){
+    vPad = outBuf[ 1 ] - 16;
+    MIDI.send(midi::NoteOn, vAeolian[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+   else if (outBuf[ 1 ]>15 & outBuf[ 1 ]<24){
+    vPad = outBuf[ 1 ] - 8;
+    MIDI.send(midi::NoteOn,vAeolian[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>=0 & outBuf[ 1 ]<8){
+    vPad = outBuf[ 1 ] - 0;
+    MIDI.send(midi::NoteOn, vAeolian[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+}
+
+else if (nScale == 3){ //Flamenca
+ if (outBuf[ 1 ]>111 & outBuf[ 1 ]<120){
+    vPad = outBuf[ 1 ] - 56;
+    MIDI.send(midi::NoteOn, vFlamenca[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>95 & outBuf[ 1 ]<104){
+    vPad = outBuf[ 1 ] - 48;
+    MIDI.send(midi::NoteOn, vFlamenca[vPad]  + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>79 & outBuf[ 1 ]<88){
+    vPad = outBuf[ 1 ] - 40;
+    MIDI.send(midi::NoteOn,vFlamenca[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>63 & outBuf[ 1 ]<72){
+    vPad = outBuf[ 1 ] - 32;
+    MIDI.send(midi::NoteOn, vFlamenca[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+   else if (outBuf[ 1 ]>47 & outBuf[ 1 ]<56){
+    vPad = outBuf[ 1 ] - 24;
+    MIDI.send(midi::NoteOn,vFlamenca[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>31 & outBuf[ 1 ]<40){
+    vPad = outBuf[ 1 ] - 16;
+    MIDI.send(midi::NoteOn, vFlamenca[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+   else if (outBuf[ 1 ]>15 & outBuf[ 1 ]<24){
+    vPad = outBuf[ 1 ] - 8;
+    MIDI.send(midi::NoteOn,vFlamenca[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>=0 & outBuf[ 1 ]<8){
+    vPad = outBuf[ 1 ] - 0;
+    MIDI.send(midi::NoteOn, vFlamenca[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+}
+
+else if (nScale == 4){ //Blues
+ if (outBuf[ 1 ]>111 & outBuf[ 1 ]<120){
+    vPad = outBuf[ 1 ] - 56;
+    MIDI.send(midi::NoteOn, vBlues[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>95 & outBuf[ 1 ]<104){
+    vPad = outBuf[ 1 ] - 48;
+    MIDI.send(midi::NoteOn, vBlues[vPad]  + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>79 & outBuf[ 1 ]<88){
+    vPad = outBuf[ 1 ] - 40;
+    MIDI.send(midi::NoteOn,vBlues[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>63 & outBuf[ 1 ]<72){
+    vPad = outBuf[ 1 ] - 32;
+    MIDI.send(midi::NoteOn, vBlues[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+   else if (outBuf[ 1 ]>47 & outBuf[ 1 ]<56){
+    vPad = outBuf[ 1 ] - 24;
+    MIDI.send(midi::NoteOn,vBlues[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>31 & outBuf[ 1 ]<40){
+    vPad = outBuf[ 1 ] - 16;
+    MIDI.send(midi::NoteOn, vBlues[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+   else if (outBuf[ 1 ]>15 & outBuf[ 1 ]<24){
+    vPad = outBuf[ 1 ] - 8;
+    MIDI.send(midi::NoteOn,vBlues[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+  
+  else if (outBuf[ 1 ]>=0 & outBuf[ 1 ]<8){
+    vPad = outBuf[ 1 ] - 0;
+    MIDI.send(midi::NoteOn, vBlues[vPad] + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+}
+
+
+//Chromatic Scale...... 
+
+ else if (nScale == 5){ 
+    if (outBuf[ 1 ]>111 & outBuf[ 1 ]<120)
+    {
+     MIDI.send(midi::NoteOn,outBuf[ 1 ]-76 + vRoot + vOctave,outBuf[ 2 ],vDinChan);
+     }
+     
+    else if (outBuf[ 1 ]>95 & outBuf[ 1 ]<104)
+    {
+     MIDI.send(midi::NoteOn,outBuf[ 1 ]-55 + vRoot + vOctave,outBuf[ 2 ],vDinChan);
+     }
+     
+    else if (outBuf[ 1 ]>79 & outBuf[ 1 ]<88)
+    {
+     MIDI.send(midi::NoteOn,outBuf[ 1 ]-34 + vRoot + vOctave,outBuf[ 2 ],vDinChan);
+     }
+         
+    else if (outBuf[ 1 ]>63 & outBuf[ 1 ]<72)
+    {
+     MIDI.send(midi::NoteOn,outBuf[ 1 ]-13 + vRoot + vOctave,outBuf[ 2 ],vDinChan);
+     }
+         
+    else if (outBuf[ 1 ]>47 & outBuf[ 1 ]<56)
+    {
+     MIDI.send(midi::NoteOn,outBuf[ 1 ]+8 + vRoot + vOctave,outBuf[ 2 ],vDinChan);
+     }
+     
+    else if (outBuf[ 1 ]>31 & outBuf[ 1 ]<40)
+    {
+     MIDI.send(midi::NoteOn,outBuf[ 1 ]+29 + vRoot + vOctave,outBuf[ 2 ],vDinChan);
+     }
+     
+    else if (outBuf[ 1 ]>15 & outBuf[ 1 ]<24)
+    {
+     MIDI.send(midi::NoteOn,outBuf[ 1 ]+50 + vRoot + vOctave,outBuf[ 2 ],vDinChan);
+     }
+     
+    else if (outBuf[ 1 ]>=0 & outBuf[ 1 ]<8)
+    {
+     MIDI.send(midi::NoteOn,outBuf[ 1 ]+71 + vRoot + vOctave,outBuf[ 2 ],vDinChan);
+     }
+ } 
+
+
+//Drums (Volca Sample)
+else if (nScale == 6)
+{
+     
+    if (outBuf[ 1 ]>111 & outBuf[ 1 ]<116)
+    {
+     MIDI.send(midi::NoteOn,outBuf[ 1 ]-52,outBuf[ 2 ],vVolcaChan);
+    }
+     
+    else if (outBuf[ 1 ]>95 & outBuf[ 1 ]<100)
+    {
+     MIDI.send(midi::NoteOn,outBuf[ 1 ]-32,outBuf[ 2 ],vVolcaChan);
+     }
+     
+    else if (outBuf[ 1 ]>79 & outBuf[ 1 ]<82)
+    {
+     MIDI.send(midi::NoteOn,outBuf[ 1 ]-12,outBuf[ 2 ],vVolcaChan);
+    }
+
+    //2 Notes
+    if (outBuf[ 1 ]==82 ){
+    MIDI.send(midi::NoteOn, vMayor[0] - 24 + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+
+    if (outBuf[ 1 ]==83 ){
+    MIDI.send(midi::NoteOn, vMayor[6] -24 + vNoteAdjust, outBuf[ 2 ], vDinChan);}
+    
+} 
+  
+  //------------------------------------------------------------------- 
+  
+  };
+ }
+
+
+// Delay time (max 16383 us)
+void doDelay(unsigned long t1, unsigned long t2, unsigned long delayTime)
+{
+    unsigned long t3;
+
+    if( t1 > t2 ){
+      t3 = (4294967295 - t1 + t2);
+    }else{
+      t3 = t2 - t1;
+    }
+
+    if( t3 < delayTime ){
+      delayMicroseconds(delayTime - t3);
+    }
+}
