@@ -58,7 +58,7 @@ Just plug the USB Host Shield to your Arduino and follow the diagram shown in th
 
 [_] [_] [_] [_] [_] [_] [_] [_] [16] 
 
-*Horizontal of circle pads
+*Horizontal row of circle pads
 
 1) Octave Up.
 
@@ -78,9 +78,10 @@ Just plug the USB Host Shield to your Arduino and follow the diagram shown in th
 
 
 
-*Horizontal of circle pads
+<br>
+*Vertical column of circle pads
 
-*Scale Selection
+-Scale Selection
 
  9) Mayor
   
