@@ -19,6 +19,37 @@
  * Yuuichi Akagawa's USB MIDI library
  * https://github.com/YuuichiAkagawa/USBH_MIDI
  *
+---------Functionality Cheat Sheat--------------------
+
+(1) (2) (3) (4) (5) (6) (7) (8)     _       
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] ( 9) |
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (10) |
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (11) |  Scale Selection
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (12) |
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (13)_|
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (14)<-  Drum Pads
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (15)
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (16)
+
+*Horizontal of circle pads
+1. Octave Up.
+2. Octave Down.
+3. Root Note Previous Note (of the chromatic scale).
+4. Root Note Next Note(of the chromatic scale).
+5. Midi Channel 10
+6. Midi Channel 11
+7. Midi Channel 12
+8. Midi Panic (Turn off all sounding notes)
+
+*Horizontal of circle pads
+*Scale Selection
+9.  Mayor
+10. Minor
+11. Flamenco
+12. Blues
+13. Chromatic
+
+14 Drum Pads (Midi Channel 16)
  *******************************************************************************
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
