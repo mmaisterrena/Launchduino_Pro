@@ -41,7 +41,6 @@ Just plug the USB Host Shield to your Arduino and follow the diagram shown in th
 # Donate
 
 Help yourself by helping us support you! Many hours have been spent developing this code. Since you find it useful, please consider donating via the button below.
-https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NRH7682YRXFP2
 
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NRH7682YRXFP2"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" alt="PayPal - The safer, easier way to pay online!" /></a>
 
