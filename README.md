@@ -37,6 +37,46 @@ Just plug the USB Host Shield to your Arduino and follow the diagram shown in th
  * Send midi to 3 diffecrent midi channels plus an additional channel for drums
  * Change midi channel just by pressing the corresponding button.
  * Midi Panic Button
+ 
+# Cheat Sheat
+
+(1) (2) (3) (4) (5) (6) (7) (8)     _       
+                                     |
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] ( 9) |
+                                     |
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (10) |
+                                     |
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (11) |  Scale Selection
+                                     |
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (12) |
+                                     |
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (13)_|
+
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (14)<-  Drum Pads
+
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (15)
+
+[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (16)
+
+*Horizontal of circle pads
+1. Octave Up.
+2. Octave Down.
+3. Root Note Previous Note (of the chromatic scale).
+4. Root Note Next Note(of the chromatic scale).
+5. Midi Channel 10
+6. Midi Channel 11
+7. Midi Channel 12
+8. Midi Panic (Turn off all sounding notes)
+
+*Horizontal of circle pads
+*Scale Selection
+9.  Mayor
+10. Minor
+11. Flamenco
+12. Blues
+13. Chromatic
+
+14 Drum Pads (Midi Channel 16)
 
 # Donate
 
