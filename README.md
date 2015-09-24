@@ -6,6 +6,9 @@ Use Arduino Uno (or Mega) and the USB Host Shield to transform your Novation Lau
 -Hardware:
  * Arduino Uno or Mega
  * Arduino USB Host Shields from Circuitsathome.com (or replica)
+ * Female MIDI jack
+ * 220 ohm resistor
+ * Wires 
   
  
 -SoftWare:
