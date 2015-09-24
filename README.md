@@ -41,21 +41,13 @@ Just plug the USB Host Shield to your Arduino and follow the diagram shown in th
 # Cheat Sheat
 
 (1) (2) (3) (4) (5) (6) (7) (8)     _       
-                                     |
 [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] ( 9) |
-                                     |
 [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (10) |
-                                     |
 [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (11) |  Scale Selection
-                                     |
 [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (12) |
-                                     |
 [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (13)_|
-
 [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (14)<-  Drum Pads
-
 [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (15)
-
 [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] (16)
 
 *Horizontal of circle pads
