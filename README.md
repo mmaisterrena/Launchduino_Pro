@@ -7,7 +7,7 @@ Developed by Mauricio Maisterrena.
 # Requirements:
  
 -Hardware:
- * Novation Launchpad S (haven't tested other version but it might work as well on the original and the RGB versions)
+ * Novation Launchpad S or mini (haven't tested other versions but it might work as well on the original and the RGB versions)
  * Arduino Uno or Mega
  * Arduino USB Host Shields from Circuitsathome.com (or replica)
  * Female MIDI jack
