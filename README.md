@@ -1,6 +1,7 @@
 # Launchduino Pro
 __________
-Use Arduino Uno (or Mega) and the USB Host Shield to transform your Novation Launchpad S into a stand-alone (no need for a computer) midi "keyboard" similar to Ableton's Push instrument mode. 
+Use Arduino Uno (or Mega) and the USB Host Shield to transform your Novation Launchpad S into a stand-alone (no need for a computer) midi "keyboard" similar to Ableton's Push instrument mode. <br>
+Watch a demo video here: https://www.youtube.com/watch?v=jpMz854RsBI
 
 Developed by Mauricio Maisterrena.
   
@@ -25,11 +26,11 @@ Developed by Mauricio Maisterrena.
  * Yuuichi Akagawa's USB MIDI library
    https://github.com/YuuichiAkagawa/USBH_MIDI
 
-# How to Connect
+# Setup
 * Plug the USB Host Shield to your Arduino .
 * To send the midi from the Arduino follow the diagram shown in this page https://www.arduino.cc/en/Tutorial/Midi
 * Install the libraries mentioned on the requirements secction by followinng the instructions in this page http://arduino.cc/en/Guide/Libraries 
-* Upload the Launchduino Pro File tio your Arduino.
+* Upload the Launchduino Pro File tio your Arduino. TIP: Make sure that Tx and Rx pins on the arduino are disconnected when uploading.
 * Connect your Lauchpad to the USB Host Shield.
 * Have fun.
 
